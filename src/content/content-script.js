@@ -7,7 +7,7 @@ function badge(result) {
   const colors = { keep: "#00875a", skip: "#dc2626", check: "#f59e0b" };
   node.setAttribute("aria-label", result.decision === "keep" ? "Job Sieve: keep" : result.decision === "skip" ? "Job Sieve: skip" : "Job Sieve: check");
   node.title = node.getAttribute("aria-label");
-  node.style.cssText = "all:initial !important;display:inline-block !important;box-sizing:border-box !important;width:4px !important;height:24px !important;min-width:4px !important;margin:0 8px 0 0 !important;padding:0 !important;border:0 !important;border-radius:3px !important;vertical-align:middle !important;background:" + colors[result.decision] + " !important;box-shadow:0 0 0 1px rgba(15,23,42,.25),0 1px 3px rgba(15,23,42,.2) !important;line-height:0 !important;";
+  node.style.cssText = "all:initial !important;position:absolute !important;display:block !important;box-sizing:border-box !important;left:0 !important;top:0 !important;bottom:0 !important;width:5px !important;height:auto !important;margin:0 !important;padding:0 !important;border:0 !important;border-radius:3px 0 0 3px !important;background:" + colors[result.decision] + " !important;box-shadow:0 0 0 1px rgba(15,23,42,.25),1px 0 3px rgba(15,23,42,.2) !important;line-height:0 !important;z-index:2 !important;";
   const root = node.attachShadow({ mode: "closed" });
   root.append(document.createElement("span"));
   return node;
@@ -20,6 +20,7 @@ function attachBadges(results, hideSkipped) {
     const candidateLinks = [...document.querySelectorAll("a[href]")].filter((link) => link.href === result.job.url);
     const target = candidateLinks[0]?.closest("li, .job-card-container, .posting") || document.querySelector("[data-job-sieve-key='" + CSS.escape(result.key) + "']");
     if (!target) continue;
+    if (getComputedStyle(target).position === "static") target.style.position = "relative";
     target.append(badge(result));
     if (hideSkipped && result.decision === "skip") { target.hidden = true; target.dataset.jobSieveHidden = "true"; }
   }
