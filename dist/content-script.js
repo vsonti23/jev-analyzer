@@ -213,8 +213,10 @@ function assessJob(job, profile, policy) {
   // rating. Opening the job later replaces this result with Jev's assessment.
   const skillHits = profile.skills.filter((skill) => includesAny(body, [skill])).length;
   const roleHit = profile.targetRoles.length ? Math.max(...roleMatchScores, 0) : 0.5;
-  const skillScore = !job.description || !profile.skills.length ? 0.5 : skillHits / profile.skills.length;
-  const fit = Math.round((10 * (0.6 * roleHit + 0.4 * skillScore)) * 10) / 10;
+  const skillScore = !profile.skills.length ? 0.5 : skillHits / profile.skills.length;
+  const fit = job.description
+    ? Math.round((10 * (0.6 * roleHit + 0.4 * skillScore)) * 10) / 10
+    : Math.round(roleHit * 10 * 10) / 10;
   if (fit < policy.minimumFit) return result("skip", fit, ["Low match"], job);
   if (!job.description) reasons.push("Provisional");
   return result("keep", fit, reasons, job, !job.description);

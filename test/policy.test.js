@@ -25,7 +25,7 @@ test("keeps a full strong match and returns a 0-10 rating", () => {
 test("keeps a clear card provisionally until its description is opened", () => {
   const result = assessJob(job({ description: null }), profile, policy);
   assert.equal(result.decision, "keep");
-  assert.equal(result.fit, 8);
+  assert.equal(result.fit, 10);
   assert.equal(result.provisional, true);
 });
 
