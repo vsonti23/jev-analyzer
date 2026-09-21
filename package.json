@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "check": "node --check src/shared/contracts.js && node --check src/background/service-worker.js && node --check src/content/adapters.js && node --check src/content/policy.js && node --check src/content/content-script.js && node --check src/ui/popup.js && node --check src/ui/options.js && node --check server/server.js",
+    "build": "node scripts/build-content.mjs",
+    "check": "npm run build && node --check src/shared/contracts.js && node --check src/background/service-worker.js && node --check src/content/adapters.js && node --check src/content/policy.js && node --check dist/content-script.js && node --check src/ui/popup.js && node --check src/ui/options.js && node --check server/server.js",
     "test": "node --test test/*.test.js",
     "server": "node server/server.js"
   }

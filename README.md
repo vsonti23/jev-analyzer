@@ -6,9 +6,10 @@ A local-first Chrome extension that filters loaded LinkedIn, Greenhouse, and Lev
 
 1. Open `chrome://extensions` and enable Developer mode.
 2. Choose **Load unpacked**.
-3. Select this repository directory.
-4. Open the extension's **Profile & filters** page and save your target roles and skills.
-5. Visit a supported job page, then select **Scan loaded jobs** from the extension popup.
+3. Run `npm run build`, then select this repository directory.
+4. Click the extension's reload button any time you pull a new commit.
+5. Open the extension's **Profile & filters** page and save your target roles and skills.
+6. Visit a supported job page, then select **Scan loaded jobs** from the extension popup.
 
 Only cards already loaded in the page are processed. A listing without its full description is marked **Check**. A job older than the configured time window is rejected locally without a classifier call.
 
