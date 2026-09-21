@@ -39,15 +39,15 @@ export function assessJob(job, profile, policy) {
   if (profile.targetRoles.length && titleTerms.length && roleMatches === 0) {
     return result("skip", null, ["Wrong role"], job);
   }
-  if (!job.description) return result("check", null, reasons.length ? reasons : ["Open description"], job);
-
-  // Placeholder for Jev: replace with an authenticated backend assessment in the next milestone.
+  // Cards without a full description still get a provisional title-level
+  // rating. Opening the job later replaces this result with Jev's assessment.
   const skillHits = profile.skills.filter((skill) => includesAny(body, [skill])).length;
   const roleHit = profile.targetRoles.length ? Math.min(1, roleMatches / Math.max(1, titleTerms.length)) : 0.5;
-  const skillScore = profile.skills.length ? skillHits / profile.skills.length : 0.5;
+  const skillScore = !job.description || !profile.skills.length ? 0.5 : skillHits / profile.skills.length;
   const fit = Math.round((10 * (0.6 * roleHit + 0.4 * skillScore)) * 10) / 10;
   if (fit < policy.minimumFit) return result("skip", fit, ["Low match"], job);
-  return result("keep", fit, reasons, job);
+  if (!job.description) reasons.push("Provisional");
+  return result("keep", fit, reasons, job, !job.description);
 }
 
 export function applyJevAssessment(local, classifier, policy) {
@@ -60,6 +60,6 @@ export function applyJevAssessment(local, classifier, policy) {
   return { ...local, fit, decision: fit >= policy.minimumFit ? "keep" : "skip", reasons: fit >= policy.minimumFit ? [] : ["Low match"] };
 }
 
-function result(decision, fit, reasons, job) {
-  return { key: jobKey(job), decision, fit, reasons, job };
+function result(decision, fit, reasons, job, provisional = false) {
+  return { key: jobKey(job), decision, fit, reasons, provisional, job };
 }

@@ -22,11 +22,11 @@ test("keeps a full strong match and returns a 0-10 rating", () => {
   assert.equal(result.fit, 10);
 });
 
-test("does not claim a card has passed sponsorship assessment", () => {
+test("keeps a clear card provisionally until its description is opened", () => {
   const result = assessJob(job({ description: null }), profile, policy);
-  assert.equal(result.decision, "check");
-  assert.equal(result.fit, null);
-  assert.ok(result.reasons.includes("Open description"));
+  assert.equal(result.decision, "keep");
+  assert.equal(result.fit, 8);
+  assert.equal(result.provisional, true);
 });
 
 test("does not reject a related role just because phrasing differs", () => {
@@ -49,6 +49,6 @@ test("routes uncertain Jev classifications to review", () => {
 
 test("treats an unassessed job card as reviewable instead of a rejection", () => {
   const result = assessJob(job({ description: null, postedText: "10 hours ago" }), profile, policy);
-  assert.equal(result.decision, "check");
-  assert.equal(result.fit, null);
+  assert.equal(result.decision, "keep");
+  assert.equal(result.provisional, true);
 });
