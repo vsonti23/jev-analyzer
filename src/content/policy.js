@@ -32,7 +32,9 @@ export function assessJob(job, profile, policy) {
   if (policy.allowedLocations.length && !job.location) reasons.push("Location unknown");
 
   const title = String(job.title || "");
-  const titleTerms = profile.targetRoles.flatMap((role) => role.toLowerCase().split(/\W+/).filter((term) => term.length > 2));
+  const roleTermSets = profile.targetRoles.map((role) => role.toLowerCase().split(/\W+/).filter((term) => term.length > 2));
+  const titleTerms = roleTermSets.flat();
+  const roleMatchScores = roleTermSets.map((terms) => terms.length ? terms.filter((term) => title.toLowerCase().includes(term)).length / terms.length : 0);
   const roleMatches = titleTerms.filter((term) => title.toLowerCase().includes(term)).length;
   // Require only one meaningful title term locally. Exact role compatibility
   // belongs to Jev once the full description has been extracted.
@@ -42,7 +44,7 @@ export function assessJob(job, profile, policy) {
   // Cards without a full description still get a provisional title-level
   // rating. Opening the job later replaces this result with Jev's assessment.
   const skillHits = profile.skills.filter((skill) => includesAny(body, [skill])).length;
-  const roleHit = profile.targetRoles.length ? Math.min(1, roleMatches / Math.max(1, titleTerms.length)) : 0.5;
+  const roleHit = profile.targetRoles.length ? Math.max(...roleMatchScores, 0) : 0.5;
   const skillScore = !job.description || !profile.skills.length ? 0.5 : skillHits / profile.skills.length;
   const fit = Math.round((10 * (0.6 * roleHit + 0.4 * skillScore)) * 10) / 10;
   if (fit < policy.minimumFit) return result("skip", fit, ["Low match"], job);
