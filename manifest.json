@@ -16,7 +16,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.linkedin.com/jobs/*", "https://*.greenhouse.io/*", "https://jobs.lever.co/*"],
+      "matches": ["https://linkedin.com/jobs/*", "https://www.linkedin.com/jobs/*", "https://*.greenhouse.io/*", "https://jobs.lever.co/*"],
       "js": ["dist/content-script.js"],
       "css": ["src/content/badges.css"],
       "run_at": "document_idle"

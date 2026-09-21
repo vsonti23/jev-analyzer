@@ -59,7 +59,7 @@ function extractLever() {
 }
 
 function extractLoadedJobs() {
-  if (location.hostname === "www.linkedin.com") return extractLinkedIn();
+  if (location.hostname === "linkedin.com" || location.hostname === "www.linkedin.com") return extractLinkedIn();
   if (location.hostname.endsWith("greenhouse.io")) return extractGreenhouse();
   if (location.hostname === "jobs.lever.co") return extractLever();
   return [];
@@ -84,7 +84,7 @@ function selectedLinkedInId() {
 function enrichWithOpenDescription(jobs) {
   const description = pageDescription();
   if (!description || description.length < 120) return jobs;
-  if (location.hostname === "www.linkedin.com") {
+  if (location.hostname === "linkedin.com" || location.hostname === "www.linkedin.com") {
     const id = selectedLinkedInId();
     return jobs.map((job) => job.id === id ? { ...job, description, coverage: "full_description" } : job);
   }
