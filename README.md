@@ -13,6 +13,8 @@ A local-first Chrome extension that filters loaded LinkedIn, Greenhouse, and Lev
 
 Only cards already loaded in the page are processed. A listing without its full description is marked **Check**. A job older than the configured time window is rejected locally without a classifier call.
 
+If LinkedIn finishes navigating after the extension loads, clicking **Scan loaded jobs** injects the scanner into that user-selected tab on demand.
+
 ## Enable Jev classification
 
 Set `TYPESAFE_API_KEY` in a local terminal and run `npm run server`. The extension uses `http://localhost:8787` by default. The key stays in the backend environment; it is never stored in the extension.

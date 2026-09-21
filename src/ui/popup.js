@@ -11,11 +11,23 @@ function update(results) {
 
 async function activeTab() { return (await chrome.tabs.query({ active: true, currentWindow: true }))[0]; }
 
+async function scanTab(tabId) {
+  try {
+    return await chrome.tabs.sendMessage(tabId, { type: "SCAN_PAGE" });
+  } catch {
+    // LinkedIn can finish its client-side navigation after Chrome's declarative
+    // content-script injection point. A user-triggered activeTab injection is a
+    // safe fallback and works for the page the user explicitly chose to scan.
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["dist/content-script.js"] });
+    return chrome.tabs.sendMessage(tabId, { type: "SCAN_PAGE" });
+  }
+}
+
 $("scan").addEventListener("click", async () => {
   $("status").textContent = "Scanning loaded jobs…";
   const tab = await activeTab();
   try {
-    const response = await chrome.tabs.sendMessage(tab.id, { type: "SCAN_PAGE" });
+    const response = await scanTab(tab.id);
     update(response.results);
   } catch { $("status").textContent = "Open LinkedIn, Greenhouse, or Lever jobs first."; }
 });
@@ -24,4 +36,3 @@ $("restore").addEventListener("click", async () => {
   try { await chrome.tabs.sendMessage(tab.id, { type: "RESTORE_SKIPPED" }); $("status").textContent = "Skipped jobs restored."; } catch { $("status").textContent = "Nothing to restore on this page."; }
 });
 $("settings").addEventListener("click", () => chrome.runtime.openOptionsPage());
-
