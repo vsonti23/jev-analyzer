@@ -46,3 +46,9 @@ test("routes uncertain Jev classifications to review", () => {
   const result = applyJevAssessment(local, { adequateEvidence: true, sponsorship: "not_stated", fit: 9, confidence: 0.4 }, policy);
   assert.equal(result.decision, "check");
 });
+
+test("treats an unassessed job card as reviewable instead of a rejection", () => {
+  const result = assessJob(job({ description: null, postedText: "10 hours ago" }), profile, policy);
+  assert.equal(result.decision, "check");
+  assert.equal(result.fit, null);
+});

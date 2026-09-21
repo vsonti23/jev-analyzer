@@ -14,7 +14,7 @@ function attachBadges(results, hideSkipped) {
   document.querySelectorAll("[data-job-sieve-hidden]").forEach((node) => { node.hidden = false; node.removeAttribute("data-job-sieve-hidden"); });
   for (const result of results) {
     const candidateLinks = [...document.querySelectorAll("a[href]")].filter((link) => link.href === result.job.url);
-    const target = candidateLinks[0]?.closest("li, .job-card-container, .posting");
+    const target = candidateLinks[0]?.closest("li, .job-card-container, .posting") || document.querySelector("[data-job-sieve-key='" + CSS.escape(result.key) + "']");
     if (!target) continue;
     target.append(badge(result));
     if (hideSkipped && result.decision === "skip") { target.hidden = true; target.dataset.jobSieveHidden = "true"; }

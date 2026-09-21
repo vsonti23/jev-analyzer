@@ -3,7 +3,7 @@ function absoluteUrl(href) { try { return new URL(href, location.href).href; } c
 
 function extractLinkedIn() {
   const cards = [...document.querySelectorAll("li.jobs-search-results__list-item, .job-card-container")];
-  return cards.map((card, index) => {
+  const extracted = cards.map((card, index) => {
     const link = card.querySelector("a[href*='/jobs/view/']");
     const age = text(card.querySelector("time"));
     return {
@@ -13,6 +13,23 @@ function extractLinkedIn() {
       location: text(card.querySelector(".job-card-container__metadata-item, .artdeco-entity-lockup__caption")),
       postedText: age, description: null, coverage: "card"
     };
+  });
+  if (extracted.length) return extracted;
+
+  // LinkedIn's current search page renders result rows as buttons. Their
+  // styling/classes change often, but a posting timestamp is stable user-facing
+  // job data and distinguishes them from ordinary navigation buttons.
+  return [...document.querySelectorAll("button")].flatMap((card, index) => {
+    const raw = text(card);
+    const age = raw?.match(/(?:reposted|posted)\s+(\d+\s+(?:minute|hour|day)s?\s+ago)/i)?.[1] || null;
+    if (!age) return [];
+    const beforeDismiss = raw.split(/\s+dismiss\s+/i)[0].trim();
+    const verifiedTitle = beforeDismiss.match(/^(?:selected,\s*)?(.+?)\s+\(verified job\)/i)?.[1];
+    const dismissedTitle = raw.match(/\bdismiss\s+(.+?)\s+job\b/i)?.[1];
+    const title = verifiedTitle || dismissedTitle || beforeDismiss;
+    const id = card.getAttribute("data-job-id") || card.getAttribute("data-occludable-job-id") || "button-" + index;
+    card.dataset.jobSieveKey = "linkedin:" + id;
+    return [{ source: "linkedin", id, url: null, title, company: null, location: null, postedText: age, description: null, coverage: "card" }];
   });
 }
 

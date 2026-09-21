@@ -27,7 +27,7 @@ function absoluteUrl(href) { try { return new URL(href, location.href).href; } c
 
 function extractLinkedIn() {
   const cards = [...document.querySelectorAll("li.jobs-search-results__list-item, .job-card-container")];
-  return cards.map((card, index) => {
+  const extracted = cards.map((card, index) => {
     const link = card.querySelector("a[href*='/jobs/view/']");
     const age = text(card.querySelector("time"));
     return {
@@ -37,6 +37,23 @@ function extractLinkedIn() {
       location: text(card.querySelector(".job-card-container__metadata-item, .artdeco-entity-lockup__caption")),
       postedText: age, description: null, coverage: "card"
     };
+  });
+  if (extracted.length) return extracted;
+
+  // LinkedIn's current search page renders result rows as buttons. Their
+  // styling/classes change often, but a posting timestamp is stable user-facing
+  // job data and distinguishes them from ordinary navigation buttons.
+  return [...document.querySelectorAll("button")].flatMap((card, index) => {
+    const raw = text(card);
+    const age = raw?.match(/(?:reposted|posted)\s+(\d+\s+(?:minute|hour|day)s?\s+ago)/i)?.[1] || null;
+    if (!age) return [];
+    const beforeDismiss = raw.split(/\s+dismiss\s+/i)[0].trim();
+    const verifiedTitle = beforeDismiss.match(/^(?:selected,\s*)?(.+?)\s+\(verified job\)/i)?.[1];
+    const dismissedTitle = raw.match(/\bdismiss\s+(.+?)\s+job\b/i)?.[1];
+    const title = verifiedTitle || dismissedTitle || beforeDismiss;
+    const id = card.getAttribute("data-job-id") || card.getAttribute("data-occludable-job-id") || "button-" + index;
+    card.dataset.jobSieveKey = "linkedin:" + id;
+    return [{ source: "linkedin", id, url: null, title, company: null, location: null, postedText: age, description: null, coverage: "card" }];
   });
 }
 
@@ -178,7 +195,7 @@ function attachBadges(results, hideSkipped) {
   document.querySelectorAll("[data-job-sieve-hidden]").forEach((node) => { node.hidden = false; node.removeAttribute("data-job-sieve-hidden"); });
   for (const result of results) {
     const candidateLinks = [...document.querySelectorAll("a[href]")].filter((link) => link.href === result.job.url);
-    const target = candidateLinks[0]?.closest("li, .job-card-container, .posting");
+    const target = candidateLinks[0]?.closest("li, .job-card-container, .posting") || document.querySelector("[data-job-sieve-key='" + CSS.escape(result.key) + "']");
     if (!target) continue;
     target.append(badge(result));
     if (hideSkipped && result.decision === "skip") { target.hidden = true; target.dataset.jobSieveHidden = "true"; }
