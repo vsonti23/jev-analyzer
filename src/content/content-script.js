@@ -7,7 +7,7 @@ function badge(result) {
   const colors = { keep: "#00875a", skip: "#dc2626", check: "#f59e0b" };
   node.setAttribute("aria-label", result.decision === "keep" ? "Job Sieve: keep" : result.decision === "skip" ? "Job Sieve: skip" : "Job Sieve: check");
   node.title = node.getAttribute("aria-label");
-  node.style.cssText = "all:initial !important;display:inline-block !important;box-sizing:border-box !important;width:16px !important;height:16px !important;min-width:16px !important;margin:0 0 0 8px !important;padding:0 !important;border:3px solid #fff !important;border-radius:50% !important;vertical-align:middle !important;background:" + colors[result.decision] + " !important;box-shadow:0 0 0 1px #334155,0 1px 4px rgba(15,23,42,.35) !important;line-height:0 !important;";
+  node.style.cssText = "all:initial !important;display:inline-block !important;box-sizing:border-box !important;width:24px !important;height:4px !important;min-width:24px !important;margin:0 0 0 8px !important;padding:0 !important;border:0 !important;border-radius:3px !important;vertical-align:middle !important;background:" + colors[result.decision] + " !important;box-shadow:0 0 0 1px rgba(15,23,42,.3),0 1px 3px rgba(15,23,42,.25) !important;line-height:0 !important;";
   const root = node.attachShadow({ mode: "closed" });
   root.append(document.createElement("span"));
   return node;
