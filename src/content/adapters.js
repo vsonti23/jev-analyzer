@@ -73,12 +73,29 @@ function extractTesla() {
   });
 }
 
+function extractGeneric() {
+  const structured = [...document.querySelectorAll("script[type='application/ld+json']")].flatMap((node) => {
+    try { const value = JSON.parse(node.textContent); return Array.isArray(value) ? value : [value]; } catch { return []; }
+  }).filter((value) => value?.['@type'] === "JobPosting");
+  if (structured.length) return structured.map((value, index) => ({ source: "generic", id: value.identifier?.value || String(index), url: absoluteUrl(value.url) || location.href, title: value.title || null, company: value.hiringOrganization?.name || null, location: value.jobLocation?.address?.addressLocality || value.jobLocation?.name || null, postedText: value.datePosted || null, description: value.description || null, coverage: "full_description" }));
+
+  const links = [...document.querySelectorAll("a[href]")].filter((link) => /\/(?:jobs?|careers?)(?:\/|\?|$)/i.test(link.getAttribute("href") || ""));
+  const seen = new Set();
+  return links.flatMap((link, index) => {
+    const url = absoluteUrl(link.href);
+    const title = text(link);
+    if (!url || !title || title.length < 4 || seen.has(url)) return [];
+    seen.add(url);
+    return [{ source: "generic", id: url, url, title, company: null, location: null, postedText: null, description: null, coverage: "card" }];
+  });
+}
+
 export function extractLoadedJobs() {
   if (location.hostname === "linkedin.com" || location.hostname === "www.linkedin.com") return extractLinkedIn();
   if (location.hostname.endsWith("greenhouse.io")) return extractGreenhouse();
   if (location.hostname === "jobs.lever.co") return extractLever();
   if (location.hostname === "www.tesla.com" && location.pathname.includes("/careers/")) return extractTesla();
-  return [];
+  return extractGeneric();
 }
 
 function pageDescription() {
@@ -98,7 +115,7 @@ function selectedLinkedInId() {
  * never treated as a complete job description.
  */
 export function enrichWithOpenDescription(jobs) {
-  const description = location.pathname.includes("/careers/search/job/") ? text(document.querySelector("main, article")) : pageDescription();
+  const description = location.pathname.includes("/careers/search/job/") || /\/(?:jobs?|careers?)(?:\/|$)/i.test(location.pathname) ? text(document.querySelector("main, article")) : pageDescription();
   if (!description || description.length < 120) return jobs;
   if (location.hostname === "linkedin.com" || location.hostname === "www.linkedin.com") {
     const id = selectedLinkedInId();
@@ -114,5 +131,13 @@ export function enrichWithOpenDescription(jobs) {
     const current = location.href.replace(/\/$/, "");
     return jobs.map((job) => job.url?.replace(/\/$/, "") === current ? { ...job, description, coverage: "full_description" } : job);
   }
+  if (jobKeyForPage(jobs)) {
+    const current = location.href.replace(/\/$/, "");
+    return jobs.map((job) => job.url?.replace(/\/$/, "") === current ? { ...job, description, coverage: "full_description" } : job);
+  }
   return jobs;
+}
+
+function jobKeyForPage(jobs) {
+  return jobs.some((job) => job.source === "generic") && /\/(?:jobs?|careers?)(?:\/|$)/i.test(location.pathname);
 }

@@ -21,7 +21,7 @@ Set `TYPESAFE_API_KEY` in a local terminal and run `npm run server`. The extensi
 
 ## Current support and limitations
 
-- LinkedIn card extraction supports both `linkedin.com/jobs/*` and `www.linkedin.com/jobs/*`; Tesla career search links are also supported provisionally. Page markup can still change.
+- LinkedIn card extraction supports both `linkedin.com/jobs/*` and `www.linkedin.com/jobs/*`; Tesla career search links are also supported provisionally. Other career pages get a conservative generic fallback using `JobPosting` structured data and job/careers links. Page markup can still change.
 - Greenhouse and Lever list cards are supported provisionally; full detail extraction and Jev classification are next milestones.
 - Without the optional local backend, full descriptions show **Check · Classifier unavailable** after local filtering.
 - A score is fit against entered fields, not a probability of getting hired.
