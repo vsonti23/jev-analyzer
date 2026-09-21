@@ -1,5 +1,15 @@
-function text(element) { return element?.textContent?.replace(/\s+/g, " ").trim() || null; }
+function text(element) { return (element?.innerText || element?.getAttribute?.("aria-label") || element?.textContent || "").replace(/\s+/g, " ").trim() || null; }
 function absoluteUrl(href) { try { return new URL(href, location.href).href; } catch { return null; } }
+
+function elementsIncludingOpenShadows(selector) {
+  const result = [];
+  const visit = (root) => {
+    result.push(...root.querySelectorAll(selector));
+    root.querySelectorAll("*").forEach((node) => { if (node.shadowRoot) visit(node.shadowRoot); });
+  };
+  visit(document);
+  return [...new Set(result)];
+}
 
 function extractLinkedIn() {
   const cards = [...document.querySelectorAll("li.jobs-search-results__list-item, .job-card-container")];
@@ -19,7 +29,7 @@ function extractLinkedIn() {
   // LinkedIn's current search page renders result rows as buttons. Their
   // styling/classes change often, but a posting timestamp is stable user-facing
   // job data and distinguishes them from ordinary navigation buttons.
-  return [...document.querySelectorAll("button")].flatMap((card, index) => {
+  return elementsIncludingOpenShadows("button, [role='button']").flatMap((card, index) => {
     const raw = text(card);
     const age = raw?.match(/(?:reposted|posted)\s+(\d+\s+(?:minute|hour|day)s?\s+ago)/i)?.[1] || null;
     if (!age) return [];
