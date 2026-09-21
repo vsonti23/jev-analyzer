@@ -1,3 +1,19 @@
-.job-sieve-badge { display:inline-block; margin:6px 0 0; padding:3px 7px; border-radius:999px; font:600 12px/1.2 system-ui,sans-serif; color:#fff; background:#475569; }
-.job-sieve-keep { background:#087f5b; }.job-sieve-skip { background:#b42318; }.job-sieve-check { background:#9a6700; }
-
+.job-sieve-badge {
+  all: initial;
+  box-sizing: border-box;
+  display: inline-block;
+  margin: 6px 0 0;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 999px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: normal;
+  color: #fff;
+  background: #475569;
+}
+.job-sieve-keep { background: #087f5b; }
+.job-sieve-skip { background: #b42318; }
+.job-sieve-check { background: #9a6700; }
