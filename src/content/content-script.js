@@ -1,5 +1,5 @@
 import { enrichWithOpenDescription, extractLoadedJobs } from "./adapters.js";
-import { assessJob } from "./policy.js";
+import { applyJevAssessment, assessJob } from "./policy.js";
 
 function badge(result) {
   const node = document.createElement("span");
@@ -24,7 +24,12 @@ function attachBadges(results, hideSkipped) {
 async function scan() {
   const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" });
   const jobs = enrichWithOpenDescription(extractLoadedJobs());
-  const results = jobs.map((job) => assessJob(job, settings.profile, settings.policy));
+  const localResults = jobs.map((job) => assessJob(job, settings.profile, settings.policy));
+  const results = await Promise.all(localResults.map(async (local) => {
+    if (local.decision === "skip" || !local.job.description) return local;
+    const response = await chrome.runtime.sendMessage({ type: "CLASSIFY_JOB", job: local.job });
+    return response.ok ? applyJevAssessment(local, response.result, settings.policy) : { ...local, decision: "check", fit: null, reasons: ["Classifier unavailable"] };
+  }));
   attachBadges(results, settings.policy.hideSkipped);
   await chrome.runtime.sendMessage({ type: "PAGE_RESULTS", results });
   return results;

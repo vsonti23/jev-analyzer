@@ -1,6 +1,6 @@
 # Job Sieve
 
-A local-first Chrome extension that filters loaded LinkedIn, Greenhouse, and Lever job cards by freshness, location, sponsorship policy, and profile fit. This initial milestone uses deterministic local matching; the Jev integration is deliberately not wired until a backend can keep the API key out of the extension.
+A local-first Chrome extension that filters loaded LinkedIn, Greenhouse, and Lever job cards by freshness, location, sponsorship policy, and profile fit. It uses local filtering first, then optionally asks Jev to classify a full job description through a local backend.
 
 ## Load it in Chrome
 
@@ -12,11 +12,15 @@ A local-first Chrome extension that filters loaded LinkedIn, Greenhouse, and Lev
 
 Only cards already loaded in the page are processed. A listing without its full description is marked **Check**. A job older than the configured time window is rejected locally without a classifier call.
 
+## Enable Jev classification
+
+Set `TYPESAFE_API_KEY` in a local terminal and run `npm run server`. The extension uses `http://localhost:8787` by default. The key stays in the backend environment; it is never stored in the extension.
+
 ## Current support and limitations
 
 - LinkedIn card extraction is intentionally conservative and page markup can change.
 - Greenhouse and Lever list cards are supported provisionally; full detail extraction and Jev classification are next milestones.
-- This version does not make network calls or upload profile/job data.
+- Without the optional local backend, full descriptions show **Check · Classifier unavailable** after local filtering.
 - A score is fit against entered fields, not a probability of getting hired.
 
 ## Development milestones

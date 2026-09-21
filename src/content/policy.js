@@ -50,6 +50,16 @@ export function assessJob(job, profile, policy) {
   return result("keep", fit, reasons, job);
 }
 
+export function applyJevAssessment(local, classifier, policy) {
+  if (local.decision === "skip") return local;
+  if (!classifier?.adequateEvidence) return { ...local, decision: "check", fit: null, reasons: ["Uncertain"] };
+  if (classifier.sponsorship === "unavailable") return { ...local, decision: "skip", fit: null, reasons: ["No sponsorship"] };
+  const fit = Number(classifier.fit);
+  if (!Number.isFinite(fit) || fit < 0 || fit > 10) return { ...local, decision: "check", fit: null, reasons: ["Invalid classification"] };
+  if (classifier.confidence < 0.55) return { ...local, decision: "check", fit, reasons: ["Uncertain"] };
+  return { ...local, fit, decision: fit >= policy.minimumFit ? "keep" : "skip", reasons: fit >= policy.minimumFit ? [] : ["Low match"] };
+}
+
 function result(decision, fit, reasons, job) {
   return { key: jobKey(job), decision, fit, reasons, job };
 }

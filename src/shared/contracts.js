@@ -6,6 +6,8 @@ export const DEFAULT_POLICY = Object.freeze({
   maxAgeHours: 24, minimumFit: 7, allowedLocations: [], hideSkipped: false
 });
 
+export const DEFAULT_CONNECTION = Object.freeze({ backendUrl: "http://localhost:8787" });
+
 export const DECISIONS = Object.freeze({ KEEP: "keep", SKIP: "skip", CHECK: "check" });
 
 export function normalizeLines(value) {
@@ -15,4 +17,3 @@ export function normalizeLines(value) {
 export function jobKey(job) {
   return job.source + ":" + (job.id || job.url || [job.title, job.company].filter(Boolean).join("|"));
 }
-
