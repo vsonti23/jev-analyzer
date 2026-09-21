@@ -61,10 +61,23 @@ function extractLever() {
   })).filter((job) => job.title);
 }
 
+function extractTesla() {
+  const links = [...document.querySelectorAll("a[href*='/careers/search/job/']")];
+  const seen = new Set();
+  return links.flatMap((link, index) => {
+    const url = absoluteUrl(link.href);
+    if (!url || seen.has(url)) return [];
+    seen.add(url);
+    const card = link.closest("article, li, [class*='job'], [class*='Job']") || link;
+    return [{ source: "tesla", id: url.match(/search\/job\/(\d+)/)?.[1] || String(index), url, title: text(link), company: "Tesla", location: text(card.querySelector("[class*='location'], [class*='Location']")), postedText: text(card.querySelector("time")), description: null, coverage: "card" }];
+  });
+}
+
 export function extractLoadedJobs() {
   if (location.hostname === "linkedin.com" || location.hostname === "www.linkedin.com") return extractLinkedIn();
   if (location.hostname.endsWith("greenhouse.io")) return extractGreenhouse();
   if (location.hostname === "jobs.lever.co") return extractLever();
+  if (location.hostname === "www.tesla.com" && location.pathname.includes("/careers/")) return extractTesla();
   return [];
 }
 
@@ -85,7 +98,7 @@ function selectedLinkedInId() {
  * never treated as a complete job description.
  */
 export function enrichWithOpenDescription(jobs) {
-  const description = pageDescription();
+  const description = location.pathname.includes("/careers/search/job/") ? text(document.querySelector("main, article")) : pageDescription();
   if (!description || description.length < 120) return jobs;
   if (location.hostname === "linkedin.com" || location.hostname === "www.linkedin.com") {
     const id = selectedLinkedInId();
@@ -96,6 +109,10 @@ export function enrichWithOpenDescription(jobs) {
     return jobs.map((job) => job.url?.replace(/\/$/, "") === current
       ? { ...job, description, coverage: "full_description" }
       : job);
+  }
+  if (location.hostname === "www.tesla.com" && location.pathname.includes("/careers/search/job/")) {
+    const current = location.href.replace(/\/$/, "");
+    return jobs.map((job) => job.url?.replace(/\/$/, "") === current ? { ...job, description, coverage: "full_description" } : job);
   }
   return jobs;
 }
