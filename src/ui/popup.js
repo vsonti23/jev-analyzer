@@ -18,7 +18,6 @@ async function scanTab(tabId) {
     // LinkedIn can finish its client-side navigation after Chrome's declarative
     // content-script injection point. A user-triggered activeTab injection is a
     // safe fallback and works for the page the user explicitly chose to scan.
-    await chrome.scripting.insertCSS({ target: { tabId }, files: ["src/content/badges.css"] });
     await chrome.scripting.executeScript({ target: { tabId }, files: ["dist/content-script.js"] });
     return chrome.tabs.sendMessage(tabId, { type: "SCAN_PAGE" });
   }

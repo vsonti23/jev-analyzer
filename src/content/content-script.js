@@ -2,10 +2,16 @@ import { enrichWithOpenDescription, extractLoadedJobs } from "./adapters.js";
 import { applyJevAssessment, assessJob } from "./policy.js";
 
 function badge(result) {
-  const node = document.createElement("span");
-  node.className = "job-sieve-badge job-sieve-" + result.decision;
+  const node = document.createElement("job-sieve-badge");
+  node.className = "job-sieve-badge";
+  node.style.cssText = "display:block;margin:6px 0 0;line-height:0;";
+  const root = node.attachShadow({ mode: "closed" });
+  const label = document.createElement("span");
+  const colors = { keep: "#087f5b", skip: "#b42318", check: "#9a6700" };
+  label.style.cssText = "display:inline-block;box-sizing:border-box;padding:3px 7px;border:0;border-radius:999px;font-family:system-ui,-apple-system,sans-serif;font-size:12px;font-weight:650;line-height:1.2;letter-spacing:normal;color:#fff;background:" + colors[result.decision] + ";";
   const rating = result.fit === null ? "" : result.fit.toFixed(1) + "/10 · ";
-  node.textContent = rating + result.decision.toUpperCase() + (result.reasons[0] ? " · " + result.reasons[0] : "");
+  label.textContent = rating + result.decision.toUpperCase() + (result.reasons[0] ? " · " + result.reasons[0] : "");
+  root.append(label);
   return node;
 }
 
