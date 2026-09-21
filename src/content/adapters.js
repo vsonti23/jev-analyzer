@@ -41,3 +41,34 @@ export function extractLoadedJobs() {
   return [];
 }
 
+function pageDescription() {
+  return text(document.querySelector(
+    ".jobs-description-content__text, .jobs-description__content, #content, .section-wrapper .content, .posting-page, .posting"
+  ));
+}
+
+function selectedLinkedInId() {
+  const selected = document.querySelector("a.jobs-search-results__list-item--active[href*='/jobs/view/'], a[aria-current='page'][href*='/jobs/view/']");
+  return selected?.href?.match(/\d+/)?.[0] || location.href.match(/jobs\/view\/(\d+)/)?.[1] || null;
+}
+
+/**
+ * A listing card frequently does not include requirements or work-authorization
+ * language. Enrich only the currently selected/full detail so a short card is
+ * never treated as a complete job description.
+ */
+export function enrichWithOpenDescription(jobs) {
+  const description = pageDescription();
+  if (!description || description.length < 120) return jobs;
+  if (location.hostname === "www.linkedin.com") {
+    const id = selectedLinkedInId();
+    return jobs.map((job) => job.id === id ? { ...job, description, coverage: "full_description" } : job);
+  }
+  if (location.hostname.endsWith("greenhouse.io") || location.hostname === "jobs.lever.co") {
+    const current = location.href.replace(/\/$/, "");
+    return jobs.map((job) => job.url?.replace(/\/$/, "") === current
+      ? { ...job, description, coverage: "full_description" }
+      : job);
+  }
+  return jobs;
+}

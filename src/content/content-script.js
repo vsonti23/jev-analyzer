@@ -1,4 +1,4 @@
-import { extractLoadedJobs } from "./adapters.js";
+import { enrichWithOpenDescription, extractLoadedJobs } from "./adapters.js";
 import { assessJob } from "./policy.js";
 
 function badge(result) {
@@ -23,7 +23,7 @@ function attachBadges(results, hideSkipped) {
 
 async function scan() {
   const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" });
-  const jobs = extractLoadedJobs();
+  const jobs = enrichWithOpenDescription(extractLoadedJobs());
   const results = jobs.map((job) => assessJob(job, settings.profile, settings.policy));
   attachBadges(results, settings.policy.hideSkipped);
   await chrome.runtime.sendMessage({ type: "PAGE_RESULTS", results });
@@ -35,4 +35,3 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "RESTORE_SKIPPED") { attachBadges([], false); sendResponse({ ok: true }); }
   return undefined;
 });
-

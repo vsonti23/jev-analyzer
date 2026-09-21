@@ -32,14 +32,18 @@ export function assessJob(job, profile, policy) {
   if (policy.allowedLocations.length && !job.location) reasons.push("Location unknown");
 
   const title = String(job.title || "");
-  if (profile.targetRoles.length && !includesAny(title, profile.targetRoles)) {
+  const titleTerms = profile.targetRoles.flatMap((role) => role.toLowerCase().split(/\W+/).filter((term) => term.length > 2));
+  const roleMatches = titleTerms.filter((term) => title.toLowerCase().includes(term)).length;
+  // Require only one meaningful title term locally. Exact role compatibility
+  // belongs to Jev once the full description has been extracted.
+  if (profile.targetRoles.length && titleTerms.length && roleMatches === 0) {
     return result("skip", null, ["Wrong role"], job);
   }
   if (!job.description) return result("check", null, reasons.length ? reasons : ["Open description"], job);
 
   // Placeholder for Jev: replace with an authenticated backend assessment in the next milestone.
   const skillHits = profile.skills.filter((skill) => includesAny(body, [skill])).length;
-  const roleHit = profile.targetRoles.length ? Number(includesAny(title, profile.targetRoles)) : 0.5;
+  const roleHit = profile.targetRoles.length ? Math.min(1, roleMatches / Math.max(1, titleTerms.length)) : 0.5;
   const skillScore = profile.skills.length ? skillHits / profile.skills.length : 0.5;
   const fit = Math.round((10 * (0.6 * roleHit + 0.4 * skillScore)) * 10) / 10;
   if (fit < policy.minimumFit) return result("skip", fit, ["Low match"], job);
@@ -49,4 +53,3 @@ export function assessJob(job, profile, policy) {
 function result(decision, fit, reasons, job) {
   return { key: jobKey(job), decision, fit, reasons, job };
 }
-
